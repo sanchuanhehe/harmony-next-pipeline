@@ -3,10 +3,7 @@ name: HarmonyOS CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # 触发分支
-  pull_request:
-    branches:
-      - master
+      - main  # 触发分支
 
 jobs:
   build:
@@ -24,14 +21,25 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 3. 安装 HarmonyOS 命令行工具
-    - name: Download HarmonyOS CLI tools
+    # 3. 缓存 HarmonyOS 命令行工具
+    - name: Cache HarmonyOS CLI tools
+      id: cache-tools
+      uses: actions/cache@v3
+      with:
+        path: harmonyos-tools  # 缓存路径
+        key: harmonyos-tools-${{ runner.os }}-${{ hashFiles('harmonyos-tools/commandline-tools-linux.zip') }}  # 缓存键
+        restore-keys: |
+          harmonyos-tools-${{ runner.os }}-
+
+    # 4. 下载 HarmonyOS 命令行工具（如果缓存未命中）
+    - name: Download HarmonyOS CLI tools (if not cached)
+      if: steps.cache-tools.outputs.cache-hit != 'true'
       run: |
         mkdir -p harmonyos-tools
-        wget -O harmonyos-tools/commandline-tools-linux.zip https://contentcenter-vali-drcn.dbankcdn.cn/pvt_2/DeveloperAlliance_package_901_9/f5/v3/9S75digfRDmH6pjQN2pAkA/commandline-tools-linux-x64-5.0.5.310.zip?HW-CC-KV=V1&HW-CC-Date=20250121T073145Z&HW-CC-Expire=7200&HW-CC-Sign=380B033290A16779E8BA300B09BA92D2DBD698166911D62415DDC057C0D2B4E7  # 替换为实际下载链接
+        wget -O harmonyos-tools/commandline-tools-linux.zip https://contentcenter-vali-drcn.dbankcdn.cn/pvt_2/DeveloperAlliance_package_901_9/f5/v3/9S75digfRDmH6pjQN2pAkA/commandline-tools-linux-x64-5.0.5.310.zip  # 替换为实际下载链接
         unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
 
-    # 4. 配置环境变量
+    # 5. 配置环境变量
     - name: Set up environment variables
       run: |
         echo "COMMANDLINE_TOOL_DIR=$(pwd)/harmonyos-tools" >> $GITHUB_ENV
@@ -39,21 +47,21 @@ jobs:
         echo "HDC_HOME=$(pwd)/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
         echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
 
-    # 5. 安装项目依赖
+    # 6. 安装项目依赖
     - name: Install project dependencies
       run: |
         cd ${{ github.workspace }}
         ohpm install --all  # 安装主工程依赖
         ohpm install --all --directory entry  # 安装 entry 模块的三方依赖
 
-    # 6. 构建 HAP 文件
+    # 7. 构建 HAP 文件
     - name: Build HAP
       run: |
         cd ${{ github.workspace }}
         hvigorw clean --no-daemon
         hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
-    # 7. 签名 HAP 文件
+    # 8. 签名 HAP 文件
     - name: Sign HAP
       run: |
         cd ${{ github.workspace }}
@@ -67,15 +75,17 @@ jobs:
         -inFile "./entry/build/default/outputs/default/entry-default.hap" \
         -keystoreFile "signing/idedemokey.p12" \
         -outFile "./entry/build/default/outputs/default/entry-default-signed.hap" \
-        -keyPwd "123456Abc" \
-        -keystorePwd "123456Abc" \
+        -keyPwd "${{ secrets.KEY_PASSWORD }}" \
+        -keystorePwd "${{ secrets.KEYSTORE_PASSWORD }}" \
         -signCode "1"
 
-    # 8. 部署到设备（可选）
-    - name: Deploy to device
-      run: |
-        cd ${{ github.workspace }}
-        hdc file send "./entry/build/default/outputs/default/entry-default-signed.hap" "data/local/tmp/entry-default-signed.hap"
-        hdc shell bm install -p "data/local/tmp/entry-default-signed.hap"
-        hdc shell rm -rf "data/local/tmp/entry-default-signed.hap"
-        hdc shell aa start -a EntryAbility -b com.example.myapplication -m entry
+    # 9. 上传 HAP 文件到 GitHub Release
+    - name: Upload HAP to GitHub Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}  # 获取上一步创建的 Release 的上传 URL
+        asset_path: ./entry/build/default/outputs/default/entry-default-signed.hap
+        asset_name: entry-default-signed.hap
+        asset_content_type: application/octet-stream
