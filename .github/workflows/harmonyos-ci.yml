@@ -1,0 +1,81 @@
+name: HarmonyOS CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # 触发分支
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 使用 Ubuntu 环境
+
+    steps:
+    # 1. 拉取代码
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 2. 设置 JDK 环境
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    # 3. 安装 HarmonyOS 命令行工具
+    - name: Download HarmonyOS CLI tools
+      run: |
+        mkdir -p harmonyos-tools
+        wget -O harmonyos-tools/commandline-tools-linux.zip https://contentcenter-vali-drcn.dbankcdn.cn/pvt_2/DeveloperAlliance_package_901_9/f5/v3/9S75digfRDmH6pjQN2pAkA/commandline-tools-linux-x64-5.0.5.310.zip?HW-CC-KV=V1&HW-CC-Date=20250121T073145Z&HW-CC-Expire=7200&HW-CC-Sign=380B033290A16779E8BA300B09BA92D2DBD698166911D62415DDC057C0D2B4E7  # 替换为实际下载链接
+        unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
+
+    # 4. 配置环境变量
+    - name: Set up environment variables
+      run: |
+        echo "COMMANDLINE_TOOL_DIR=$(pwd)/harmonyos-tools" >> $GITHUB_ENV
+        echo "PATH=$(pwd)/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
+        echo "HDC_HOME=$(pwd)/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
+        echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
+
+    # 5. 安装项目依赖
+    - name: Install project dependencies
+      run: |
+        cd ${{ github.workspace }}
+        ohpm install --all  # 安装主工程依赖
+        ohpm install --all --directory entry  # 安装 entry 模块的三方依赖
+
+    # 6. 构建 HAP 文件
+    - name: Build HAP
+      run: |
+        cd ${{ github.workspace }}
+        hvigorw clean --no-daemon
+        hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
+
+    # 7. 签名 HAP 文件
+    - name: Sign HAP
+      run: |
+        cd ${{ github.workspace }}
+        java -jar $COMMANDLINE_TOOL_DIR/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
+        sign-app \
+        -keyAlias "ide_demo_app" \
+        -signAlg "SHA256withECDSA" \
+        -mode "localSign" \
+        -appCertFile "signing/demo.cer" \
+        -profileFile "signing/demo.p7b" \
+        -inFile "./entry/build/default/outputs/default/entry-default.hap" \
+        -keystoreFile "signing/idedemokey.p12" \
+        -outFile "./entry/build/default/outputs/default/entry-default-signed.hap" \
+        -keyPwd "123456Abc" \
+        -keystorePwd "123456Abc" \
+        -signCode "1"
+
+    # 8. 部署到设备（可选）
+    - name: Deploy to device
+      run: |
+        cd ${{ github.workspace }}
+        hdc file send "./entry/build/default/outputs/default/entry-default-signed.hap" "data/local/tmp/entry-default-signed.hap"
+        hdc shell bm install -p "data/local/tmp/entry-default-signed.hap"
+        hdc shell rm -rf "data/local/tmp/entry-default-signed.hap"
+        hdc shell aa start -a EntryAbility -b com.example.myapplication -m entry
