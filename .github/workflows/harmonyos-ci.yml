@@ -18,27 +18,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. 检查路径
-      - name: Check paths
-        run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          echo "Current directory: $(pwd)"
-          ls -la $GITHUB_WORKSPACE
-
-      # 3. 安装项目依赖
+      # 2. 安装项目依赖
       - name: Install dependencies
         run: |
           cd $GITHUB_WORKSPACE
           ohpm install --all
 
-      # 4. 构建 HAP 文件
+      # 3. 构建 HAP 文件
       - name: Build HAP
         run: |
           cd $GITHUB_WORKSPACE
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
-      # 5. 上传构建输出作为 artifact
+      # 4. 上传构建输出作为 artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v4
         with:
