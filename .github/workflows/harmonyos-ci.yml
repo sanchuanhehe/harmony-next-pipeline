@@ -33,7 +33,7 @@ jobs:
 
       - name: Check build output
         run: |
-          ls -la $GITHUB_WORKSPACE/entry/build/default/outputs/
+          ls -la $GITHUB_WORKSPACE/entry/build/default/outputs/default
       
       # 4. 上传构建输出作为 artifact
       - name: Upload Build Output
@@ -41,7 +41,7 @@ jobs:
         with:
           name: build-output
           path: |
-            $GITHUB_WORKSPACE/entry/build/default/outputs/
+            $GITHUB_WORKSPACE/entry/build/default/outputs/default
 
   publish:
     needs: build
@@ -59,7 +59,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: $GITHUB_WORKSPACE/entry/build/default/outputs/
+          path: $GITHUB_WORKSPACE/entry/build/default/outputs/default
 
       # 3. 签名 HAP 文件
       - name: Sign HAP
