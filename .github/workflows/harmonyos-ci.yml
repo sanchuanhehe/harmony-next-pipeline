@@ -3,14 +3,14 @@ name: HarmonyOS CI/CD Pipeline
 on:
   push:
     branches:
-      - master  # 触发分支
+      - master
   pull_request:
     branches:
       - master
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # 使用 Ubuntu 环境
+    runs-on: ubuntu-latest
 
     steps:
     # 1. 拉取代码
@@ -24,67 +24,61 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 3. 缓存 HarmonyOS 命令行工具
+    # 3. 缓存 HarmonyOS CLI 工具
     - name: Cache HarmonyOS CLI tools
-      id: cache-tools
+      id: cache-harmonyos-tools
       uses: actions/cache@v3
       with:
-        path: harmonyos-tools  # 缓存路径
-        key: harmonyos-tools-${{ runner.os }}-${{ hashFiles('harmonyos-tools/commandline-tools-linux.zip') }}  # 缓存键
+        path: /opt/harmonyos-tools  # 缓存的路径
+        key: harmonyos-tools-${{ runner.os }}-${{ hashFiles('harmonyos-tools/commandline-tools-linux.zip') }}
         restore-keys: |
           harmonyos-tools-${{ runner.os }}-
 
-    - name: Download HarmonyOS CLI tools (if not cached)
-      if: steps.cache-tools.outputs.cache-hit != 'true'
+    - name: Install HarmonyOS CLI tools (if not cached)
+      if: steps.cache-harmonyos-tools.outputs.cache-hit != 'true'
       run: |
-        if [ ! -d "harmonyos-tools/command-line-tools" ]; then
-          mkdir -p harmonyos-tools
-          wget -O harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
-          unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
-          chmod +x harmonyos-tools/command-line-tools/bin/*
-        fi
+        sudo mkdir -p /opt/harmonyos-tools
+        sudo wget -O /opt/harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
+        sudo unzip /opt/harmonyos-tools/commandline-tools-linux.zip -d /opt/harmonyos-tools/
+        sudo chmod -R +x /opt/harmonyos-tools/command-line-tools/bin
 
-    - name: Check HarmonyOS CLI tools
-      run: |
-        ls -al harmonyos-tools/command-line-tools/bin/
-        ls -al harmonyos-tools/command-line-tools/
-
-    # 5. 配置环境变量
+    # 4. 配置环境变量
     - name: Set up environment variables
       run: |
-        echo "COMMANDLINE_TOOL_DIR=$(pwd)/harmonyos-tools" >> $GITHUB_ENV
-        echo "PATH=$(pwd)/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
-        echo "HDC_HOME=$(pwd)/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
+        echo "COMMANDLINE_TOOL_DIR=/opt/harmonyos-tools" >> $GITHUB_ENV
+        echo "PATH=/opt/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
+        echo "HDC_HOME=/opt/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
         echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
-    
-    # 调试用
+
+    # 5. 打印环境变量和验证工具
     - name: Print environment variables
       run: |
         echo "COMMANDLINE_TOOL_DIR=$COMMANDLINE_TOOL_DIR"
         echo "PATH=$PATH"
         echo "HDC_HOME=$HDC_HOME"
-    - name: Check ohos command
+
+    - name: Check HarmonyOS CLI tools
       run: |
-        ls -al $COMMANDLINE_TOOL_DIR/command-line-tools/bin/
-        if [ -f "$COMMANDLINE_TOOL_DIR/command-line-tools/bin/ohos" ]; then
+        ls -al /opt/harmonyos-tools/command-line-tools/bin/
+        if [ -f "/opt/harmonyos-tools/command-line-tools/bin/ohos" ]; then
           echo "ohos command found"
         else
           echo "ohos command not found"
         fi
-      
-    # 检查commandline-tools是否安装成功
+
     - name: Check commandline-tools
       run: |
         java -version
         ohos -v
         hvigorw -v
         ohpm -v
+
     # 6. 安装项目依赖
     - name: Install project dependencies
       run: |
         cd ${{ github.workspace }}
-        ohpm install --all  # 安装主工程依赖
-        ohpm install --all --directory entry  # 安装 entry 模块的三方依赖
+        ohpm install --all
+        ohpm install --all --directory entry
 
     # 7. 构建 HAP 文件
     - name: Build HAP
@@ -97,7 +91,7 @@ jobs:
     - name: Sign HAP
       run: |
         cd ${{ github.workspace }}
-        java -jar $COMMANDLINE_TOOL_DIR/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
+        java -jar /opt/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
         sign-app \
         -keyAlias "ide_demo_app" \
         -signAlg "SHA256withECDSA" \
@@ -117,7 +111,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}  # 获取上一步创建的 Release 的上传 URL
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./entry/build/default/outputs/default/entry-default-signed.hap
         asset_name: entry-default-signed.hap
         asset_content_type: application/octet-stream
