@@ -52,6 +52,8 @@ jobs:
           echo "PATH=${COMMANDLINE_TOOL_DIR}/command-line-tools/bin:$PATH" >> $GITHUB_ENV
           echo "HDC_HOME=${HDC_HOME}" >> $GITHUB_ENV
           echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
+          export OHOS_BASE_SDK_HOME="${{ runner.temp }}/harmonyos-tools/command-line-tools/sdk/default/openharmony"
+          echo "OHOS_BASE_SDK_HOME=${OHOS_BASE_SDK_HOME}" >> $GITHUB_ENV
 
       # 安装项目依赖,进入工程及各个模块下执行ohpm install命令，安装工程及各个模块依赖的三方库。
       - name: Install dependencies
