@@ -47,12 +47,16 @@ jobs:
         echo "Cache hit: ${{ steps.cache-harmonyos-tools.outputs.cache-hit }}"
         ls -al ${{ runner.temp }}/harmonyos-tools
 
-    # 4. 配置环境变量
+    # 配置环境变量
     - name: Set up environment variables
       run: |
-        echo "COMMANDLINE_TOOL_DIR=${{ runner.temp }}/harmonyos-tools" >> $GITHUB_ENV
-        echo "PATH=${{ runner.temp }}/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
-        echo "HDC_HOME=${{ runner.temp }}/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
+        export COMMANDLINE_TOOL_DIR="${{ runner.temp }}/harmonyos-tools"
+        export PATH="${COMMANDLINE_TOOL_DIR}/command-line-tools/bin:$PATH"
+        export HDC_HOME="${COMMANDLINE_TOOL_DIR}/command-line-tools/sdk/default/openharmony/toolchains"
+        export PATH="$HDC_HOME:$PATH"
+        echo "COMMANDLINE_TOOL_DIR=${COMMANDLINE_TOOL_DIR}" >> $GITHUB_ENV
+        echo "PATH=${COMMANDLINE_TOOL_DIR}/command-line-tools/bin:$PATH" >> $GITHUB_ENV
+        echo "HDC_HOME=${HDC_HOME}" >> $GITHUB_ENV
         echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
 
     # 5. 打印环境变量和验证工具
