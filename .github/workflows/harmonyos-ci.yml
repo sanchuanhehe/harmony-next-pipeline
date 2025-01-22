@@ -59,7 +59,7 @@ jobs:
 
     - name: Check HarmonyOS CLI tools
       run: |
-        ls -al /opt/harmonyos-tools/command-line-tools/bin/
+        sudo ls -al /opt/harmonyos-tools/command-line-tools/bin/
         if [ -f "/opt/harmonyos-tools/command-line-tools/bin/ohos" ]; then
           echo "ohos command found"
         else
