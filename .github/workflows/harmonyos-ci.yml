@@ -34,16 +34,17 @@ jobs:
         restore-keys: |
           harmonyos-tools-${{ runner.os }}-
 
-    # 4. 下载 HarmonyOS 命令行工具（如果缓存未命中）
     - name: Download HarmonyOS CLI tools (if not cached)
       if: steps.cache-tools.outputs.cache-hit != 'true'
       run: |
-        mkdir -p harmonyos-tools
-        wget -O harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
-        unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
-        rm harmonyos-tools/commandline-tools-linux.zip
-        chmod +x harmonyos-tools/command-line-tools/bin/*
-    
+        if [ ! -d "harmonyos-tools/command-line-tools" ]; then
+          mkdir -p harmonyos-tools
+          wget -O harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
+          unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
+          rm harmonyos-tools/commandline-tools-linux.zip
+          chmod +x harmonyos-tools/command-line-tools/bin/*
+        fi
+
     - name: Check HarmonyOS CLI tools
       run: |
         ls -al harmonyos-tools/command-line-tools/bin/
