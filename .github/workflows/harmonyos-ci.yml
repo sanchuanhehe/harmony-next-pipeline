@@ -64,7 +64,7 @@ jobs:
 
       # 上传构建输出作为 artifact
       - name: Upload Build Output
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build-output
           path: ./entry/build/default/outputs/default/
@@ -87,7 +87,7 @@ jobs:
 
       # 3. 下载构建输出 artifact
       - name: Download Build Output
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build-output
           path: ./entry/build/default/outputs/default/
