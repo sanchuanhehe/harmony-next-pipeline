@@ -96,31 +96,53 @@ jobs:
         hvigorw clean --no-daemon
         hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
-    # 8. 签名 HAP 文件
-    - name: Sign HAP
-      run: |
-        cd ${{ github.workspace }}
-        java -jar ${{ runner.temp }}/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
-        sign-app \
-        -keyAlias "ide_demo_app" \
-        -signAlg "SHA256withECDSA" \
-        -mode "localSign" \
-        -appCertFile "signing/demo.cer" \
-        -profileFile "signing/demo.p7b" \
-        -inFile "./entry/build/default/outputs/default/entry-default.hap" \
-        -keystoreFile "signing/idedemokey.p12" \
-        -outFile "./entry/build/default/outputs/default/entry-default-signed.hap" \
-        -keyPwd "${{ secrets.KEY_PASSWORD }}" \
-        -keystorePwd "${{ secrets.KEYSTORE_PASSWORD }}" \
-        -signCode "1"
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') # 仅在特定标签触发
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # 9. 上传 HAP 文件到 GitHub Release
-    - name: Upload HAP to GitHub Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./entry/build/default/outputs/default/entry-default-signed.hap
-        asset_name: entry-default-signed.hap
-        asset_content_type: application/octet-stream
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Sign HAP
+        run: |
+          cd ${{ github.workspace }}
+          java -jar ${{ runner.temp }}/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
+          sign-app \
+          -keyAlias "ide_demo_app" \
+          -signAlg "SHA256withECDSA" \
+          -mode "localSign" \
+          -appCertFile "signing/demo.cer" \
+          -profileFile "signing/demo.p7b" \
+          -inFile "./entry/build/default/outputs/default/entry-default.hap" \
+          -keystoreFile "signing/idedemokey.p12" \
+          -outFile "./entry/build/default/outputs/default/entry-default-signed.hap" \
+          -keyPwd "${{ secrets.KEY_PASSWORD }}" \
+          -keystorePwd "${{ secrets.KEYSTORE_PASSWORD }}" \
+          -signCode "1"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload HAP to GitHub Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./entry/build/default/outputs/default/entry-default-signed.hap
+          asset_name: entry-default-signed.hap
+          asset_content_type: application/octet-stream
