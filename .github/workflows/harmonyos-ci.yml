@@ -29,25 +29,30 @@ jobs:
       id: cache-harmonyos-tools
       uses: actions/cache@v3
       with:
-        path: /opt/harmonyos-tools  # 缓存的路径
-        key: harmonyos-tools-${{ runner.os }}-${{ hashFiles('harmonyos-tools/commandline-tools-linux.zip') }}
+        path: ${{ runner.temp }}/harmonyos-tools  # 修改为用户目录
+        key: harmonyos-tools-${{ runner.os }}-5.0.7.100
         restore-keys: |
           harmonyos-tools-${{ runner.os }}-
 
     - name: Install HarmonyOS CLI tools (if not cached)
       if: steps.cache-harmonyos-tools.outputs.cache-hit != 'true'
       run: |
-        sudo mkdir -p /opt/harmonyos-tools
-        sudo wget -O /opt/harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
-        sudo unzip /opt/harmonyos-tools/commandline-tools-linux.zip -d /opt/harmonyos-tools/
-        sudo chmod -R +x /opt/harmonyos-tools/command-line-tools/bin
+        mkdir -p ${{ runner.temp }}/harmonyos-tools
+        wget -O ${{ runner.temp }}/harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
+        unzip ${{ runner.temp }}/harmonyos-tools/commandline-tools-linux.zip -d ${{ runner.temp }}/harmonyos-tools/
+        chmod -R +x ${{ runner.temp }}/harmonyos-tools/command-line-tools/bin
+
+    - name: Debug cache path
+      run: |
+        echo "Cache hit: ${{ steps.cache-harmonyos-tools.outputs.cache-hit }}"
+        ls -al ${{ runner.temp }}/harmonyos-tools
 
     # 4. 配置环境变量
     - name: Set up environment variables
       run: |
-        echo "COMMANDLINE_TOOL_DIR=/opt/harmonyos-tools" >> $GITHUB_ENV
-        echo "PATH=/opt/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
-        echo "HDC_HOME=/opt/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
+        echo "COMMANDLINE_TOOL_DIR=${{ runner.temp }}/harmonyos-tools" >> $GITHUB_ENV
+        echo "PATH=${{ runner.temp }}/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
+        echo "HDC_HOME=${{ runner.temp }}/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
         echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
 
     # 5. 打印环境变量和验证工具
@@ -59,8 +64,8 @@ jobs:
 
     - name: Check HarmonyOS CLI tools
       run: |
-        sudo ls -al /opt/harmonyos-tools/command-line-tools/bin/
-        if [ -f "/opt/harmonyos-tools/command-line-tools/bin/ohos" ]; then
+        sudo ls -al ${{ runner.temp }}/harmonyos-tools/command-line-tools/bin/
+        if [ -f "${{ runner.temp }}/harmonyos-tools/command-line-tools/bin/ohos" ]; then
           echo "ohos command found"
         else
           echo "ohos command not found"
@@ -91,7 +96,7 @@ jobs:
     - name: Sign HAP
       run: |
         cd ${{ github.workspace }}
-        java -jar /opt/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
+        java -jar ${{ runner.temp }}/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
         sign-app \
         -keyAlias "ide_demo_app" \
         -signAlg "SHA256withECDSA" \
