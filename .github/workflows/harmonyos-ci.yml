@@ -31,26 +31,19 @@ jobs:
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
-      - name: Get container ID
-        id: get-container-id
+      # 4. 获取构建输出路径
+      - name: Get build output path
+        id: get_build_output_path
         run: |
-          echo "container_id=$(hostname)" >> $GITHUB_OUTPUT
+          cd $GITHUB_WORKSPACE
+          echo "output_path=$(ls -d $PWD/entry/build/default/outputs/default)" >> $GITHUB_OUTPUT
 
-      - name: Check build output
-        run: |
-          ls -la $GITHUB_WORKSPACE/entry/build/default/outputs/default
-      
-      - name: Copy build output to host
-        run: |
-          docker cp ${{ steps.get-container-id.outputs.container_id }}:$GITHUB_WORKSPACE/entry/build/default/outputs/default/ $GITHUB_WORKSPACE/entry/build/default/outputs/default/
-      
-      # 4. 上传构建输出作为 artifact
+      # 5. 上传构建输出作为 artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: |
-            $GITHUB_WORKSPACE/entry/build/default/outputs/default
+          path: ${{ steps.get_build_output_path.outputs.output_path }}
 
   publish:
     needs: build
