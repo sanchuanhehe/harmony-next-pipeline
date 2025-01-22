@@ -31,6 +31,10 @@ jobs:
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
+      - name: Check build output
+        run: |
+          ls -la $GITHUB_WORKSPACE/entry/build/default/outputs/
+      
       # 4. 上传构建输出作为 artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v4
