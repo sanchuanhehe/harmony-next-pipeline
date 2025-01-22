@@ -43,6 +43,8 @@ jobs:
         unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
         rm harmonyos-tools/commandline-tools-linux.zip
         chmod +x harmonyos-tools/command-line-tools/bin/*
+        ls -al harmonyos-tools/command-line-tools/bin/
+        ls -al harmonyos-tools/command-line-tools/
 
     # 5. 配置环境变量
     - name: Set up environment variables
