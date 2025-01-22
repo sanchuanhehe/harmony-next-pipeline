@@ -53,12 +53,17 @@ jobs:
           echo "HDC_HOME=${HDC_HOME}" >> $GITHUB_ENV
           echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
 
+      # 安装项目依赖,进入工程及各个模块下执行ohpm install命令，安装工程及各个模块依赖的三方库。
+      - name: Install dependencies
+        run: |
+          cd ${{ github.workspace }}
+          ohpm install --all
+          
+
       # 构建 HAP 文件
       - name: Build HAP
         run: |
           cd ${{ github.workspace }}
-          ohpm install --all
-          ohpm install --all --directory entry
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
