@@ -39,7 +39,7 @@ jobs:
       if: steps.cache-tools.outputs.cache-hit != 'true'
       run: |
         mkdir -p harmonyos-tools
-        wget -O harmonyos-tools/commandline-tools-linux.zip https://contentcenter-vali-drcn.dbankcdn.cn/pvt_2/DeveloperAlliance_package_901_9/f5/v3/9S75digfRDmH6pjQN2pAkA/commandline-tools-linux-x64-5.0.5.310.zip  # 替换为实际下载链接
+        wget -O harmonyos-tools/commandline-tools-linux.zip https://harmonytools.sanchuanhehe.com/commandline-tools-linux-x64-5.0.7.100.zip
         unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
 
     # 5. 配置环境变量
