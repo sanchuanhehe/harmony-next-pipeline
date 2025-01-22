@@ -31,9 +31,18 @@ jobs:
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
+      - name: Get container ID
+        id: get-container-id
+        run: |
+          echo "container_id=$(hostname)" >> $GITHUB_OUTPUT
+
       - name: Check build output
         run: |
           ls -la $GITHUB_WORKSPACE/entry/build/default/outputs/default
+      
+      - name: Copy build output to host
+        run: |
+          docker cp ${{ steps.get-container-id.outputs.container_id }}:$GITHUB_WORKSPACE/entry/build/default/outputs/default/ $GITHUB_WORKSPACE/entry/build/default/outputs/default/
       
       # 4. 上传构建输出作为 artifact
       - name: Upload Build Output
