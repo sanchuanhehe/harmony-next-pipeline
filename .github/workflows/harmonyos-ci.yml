@@ -49,7 +49,20 @@ jobs:
         echo "PATH=$(pwd)/harmonyos-tools/command-line-tools/bin:$PATH" >> $GITHUB_ENV
         echo "HDC_HOME=$(pwd)/harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains" >> $GITHUB_ENV
         echo "PATH=$HDC_HOME:$PATH" >> $GITHUB_ENV
-
+    
+    # 调试用
+    - name: Print environment variables
+      run: |
+        echo "COMMANDLINE_TOOL_DIR=$COMMANDLINE_TOOL_DIR"
+        echo "PATH=$PATH"
+        echo "HDC_HOME=$HDC_HOME"
+    # 检查commandline-tools是否安装成功
+    - name: Check commandline-tools
+      run: |
+        java -version
+        ohos -v
+        hvigorw -v
+        ohpm -v
     # 6. 安装项目依赖
     - name: Install project dependencies
       run: |
