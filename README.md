@@ -23,8 +23,6 @@
 
 ### 前提条件
 
-- **HarmonyOS CLI 工具**：确保环境中已安装 HarmonyOS CLI 工具，用于构建应用程序。该 pipeline 会缓存这些工具以避免重复下载。
-- **Java 17**：Java 用于签名 `.hap` 文件，请确保环境中已配置 Java 17。
 - **GitHub Secrets**：需要配置 GitHub secrets（如 keystore 密码等敏感信息）。
 
 ### 设置
