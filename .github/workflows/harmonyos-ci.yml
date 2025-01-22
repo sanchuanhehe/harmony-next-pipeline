@@ -18,31 +18,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. 安装项目依赖
+      # 2. 检查路径
+      - name: Check paths
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "Current directory: $(pwd)"
+          ls -la $GITHUB_WORKSPACE
+
+      # 3. 安装项目依赖
       - name: Install dependencies
         run: |
-          cd ${{ github.workspace }}
+          cd $GITHUB_WORKSPACE
           ohpm install --all
 
-      # 3. 构建 HAP 文件
+      # 4. 构建 HAP 文件
       - name: Build HAP
         run: |
-          cd ${{ github.workspace }}
+          cd $GITHUB_WORKSPACE
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon
 
-      # 4. 上传构建输出作为 artifact
+      # 5. 上传构建输出作为 artifact
       - name: Upload Build Output
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: ./entry/build/default/outputs/default/
+          path: $GITHUB_WORKSPACE/entry/build/default/outputs/default/
 
   publish:
     needs: build
     runs-on: ubuntu-latest
     container: ghcr.io/sanchuanhehe/harmony-next-pipeline-docker/harmonyos-ci-image:latest
-    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/release/')
+    if: startsWith(github.ref, 'refs/tags/v') # 仅在特定标签触发
 
     steps:
       # 1. 拉取代码
@@ -54,12 +61,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-output
-          path: ./entry/build/default/outputs/default/
+          path: $GITHUB_WORKSPACE/entry/build/default/outputs/default/
 
       # 3. 签名 HAP 文件
       - name: Sign HAP
         run: |
-          cd ${{ github.workspace }}
+          cd $GITHUB_WORKSPACE
           java -jar /harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
           sign-app \
           -keyAlias "ide_demo_app" \
@@ -92,6 +99,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./entry/build/default/outputs/default/entry-default-signed.hap
+          asset_path: $GITHUB_WORKSPACE/entry/build/default/outputs/default/entry-default-signed.hap
           asset_name: entry-default-signed.hap
           asset_content_type: application/octet-stream
