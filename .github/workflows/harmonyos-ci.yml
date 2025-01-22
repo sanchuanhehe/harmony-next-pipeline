@@ -63,6 +63,15 @@ jobs:
         echo "COMMANDLINE_TOOL_DIR=$COMMANDLINE_TOOL_DIR"
         echo "PATH=$PATH"
         echo "HDC_HOME=$HDC_HOME"
+    - name: Check ohos command
+      run: |
+        ls -al $COMMANDLINE_TOOL_DIR/command-line-tools/bin/
+        if [ -f "$COMMANDLINE_TOOL_DIR/command-line-tools/bin/ohos" ]; then
+          echo "ohos command found"
+        else
+          echo "ohos command not found"
+        fi
+      
     # 检查commandline-tools是否安装成功
     - name: Check commandline-tools
       run: |
