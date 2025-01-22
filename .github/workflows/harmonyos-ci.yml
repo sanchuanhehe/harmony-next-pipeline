@@ -43,6 +43,9 @@ jobs:
         unzip harmonyos-tools/commandline-tools-linux.zip -d harmonyos-tools/
         rm harmonyos-tools/commandline-tools-linux.zip
         chmod +x harmonyos-tools/command-line-tools/bin/*
+    
+    - name: Check HarmonyOS CLI tools
+      run: |
         ls -al harmonyos-tools/command-line-tools/bin/
         ls -al harmonyos-tools/command-line-tools/
 
