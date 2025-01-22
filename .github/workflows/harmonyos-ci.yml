@@ -36,7 +36,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: $GITHUB_WORKSPACE/entry/build/default/outputs/default/
+          path: |
+            $GITHUB_WORKSPACE/entry/build/default/outputs/default/
+            ${{ github.workspace }}/entry/build/default/outputs/default/
 
   publish:
     needs: build
