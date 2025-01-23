@@ -10,7 +10,7 @@
       "GitHub.copilot-chat",
       "eamodio.gitlens",
       "mrmlnc.vscode-json5",
-      "esbenp.prettier-vscode",
+      "EditorConfig.EditorConfig",
       "ms-vscode-remote.remote-ssh",
       "ms-vscode-remote.remote-ssh-edit",
       "ms-vscode.remote-explorer",
