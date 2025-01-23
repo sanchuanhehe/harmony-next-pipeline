@@ -1,0 +1,20 @@
+{
+    "recommendations": [
+      "kkaaddff.arkts-ets",
+      "MS-CEINTL.vscode-language-pack-zh-hans",
+      "xaver.clang-format",
+      "ms-vscode-remote.remote-containers",
+      "ms-azuretools.vscode-docker",
+      "github.vscode-github-actions",
+      "GitHub.copilot",
+      "GitHub.copilot-chat",
+      "eamodio.gitlens",
+      "mrmlnc.vscode-json5",
+      "esbenp.prettier-vscode",
+      "ms-vscode-remote.remote-ssh",
+      "ms-vscode-remote.remote-ssh-edit",
+      "ms-vscode.remote-explorer",
+      "vscode-icons-team.vscode-icons"
+    ]
+  }
+  

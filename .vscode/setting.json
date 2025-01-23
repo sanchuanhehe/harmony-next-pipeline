@@ -1,0 +1,49 @@
+{
+    "explorer.confirmDelete": false,
+    "files.autoGuessEncoding": true,
+    "files.autoSave": "onWindowChange",
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "[git-commit]": {
+        "editor.wordWrap": "wordWrapColumn"
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": true,
+        "markdown": true,
+        "scminput": false
+    },
+    "github.copilot.editor.enableAutoCompletions": true,
+    "terminal.integrated.commandsToSkipShell": [
+        "github.copilot.terminal.suggestCommand",
+        "matlab.interrupt"
+    ],
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+    },
+    "[arkts]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "workbench.startupEditor": "none",
+    "workbench.iconTheme": "vscode-icons",
+    "workbench.colorCustomizations": {
+        "editorCursor.foreground": "#FF0000",
+        "terminalCursor.foreground": "#FF0000"
+    },
+    "breadcrumbs.symbolSortOrder": "name",
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "editor.wordWrap": "on",
+    "chat.editor.wordWrap": "on",
+    "editor.minimap.sectionHeaderFontSize": 20,
+    "workbench.editorLargeFileConfirmation": 20,
+    "workbench.editorAssociations": {
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "*.md": "default",
+        "{git,gitlens}:/**/*.{md,csv,svg}": "default"
+    },
+    "editor.accessibilitySupport": "on"
+}

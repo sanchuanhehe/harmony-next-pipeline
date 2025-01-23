@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Clean Build",
+            "type": "shell",
+            "command": "hvigorw clean --no-daemon",
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Assemble HAP",
+            "type": "shell",
+            "command": "hvigorw assembleHap --mode module -p product=default -p buildMode=debug --no-daemon",
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Sign HAP",
+            "type": "shell",
+            "command": "java -jar /harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar sign-app -keyAlias \"ide_demo_app\" -signAlg \"SHA256withECDSA\" -mode \"localSign\" -appCertFile \"signing/demo.cer\" -profileFile \"signing/demo.p7b\" -inFile \"./entry/build/default/outputs/default/entry-default.hap\" -keystoreFile \"signing/idedemokey.p12\" -outFile \"./entry/build/default/outputs/default/entry-default-signed.hap\" -keyPwd \"${KEY_PASSWORD}\" -keystorePwd \"${KEYSTORE_PASSWORD}\" -signCode \"1\"",
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
