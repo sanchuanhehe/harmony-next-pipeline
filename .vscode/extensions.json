@@ -14,7 +14,8 @@
       "ms-vscode-remote.remote-ssh",
       "ms-vscode-remote.remote-ssh-edit",
       "ms-vscode.remote-explorer",
-      "vscode-icons-team.vscode-icons"
+      "vscode-icons-team.vscode-icons",
+      "esbenp.prettier-vscode"
     ]
   }
   
