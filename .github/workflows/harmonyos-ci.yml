@@ -86,17 +86,6 @@ jobs:
           -keystorePwd "${{ secrets.KEYSTORE_PASSWORD }}" \
           -signCode "1"
 
-      # 4. 创建 GitHub Release
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-
       # 4. 创建 GitHub Release 并上传资产
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
@@ -104,7 +93,7 @@ jobs:
         with:
           name: ${{ github.ref_name }}
           files: |
-            ${{ steps.sign_hap.outcome == 'success' && './entry/build/default/outputs/default/entry-default-signed.hap' || './entry/build/default/outputs/default/entry-default-unsigned.hap' }}
+            ${{ steps.sign_hap.outcome == 'success' && '$GITHUB_WORKSPACE/entry/build/default/outputs/default/entry-default-signed.hap' || '$GITHUB_WORKSPACE/entry/build/default/outputs/default/entry-default-unsigned.hap' }}
           draft: false
           prerelease: false
         env:
