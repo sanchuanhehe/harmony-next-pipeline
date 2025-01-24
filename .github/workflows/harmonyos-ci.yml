@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '*'
   pull_request:
     branches:
       - master
@@ -49,8 +51,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     container: ghcr.io/sanchuanhehe/harmony-next-pipeline-docker/harmonyos-ci-image:latest
-    if: startsWith(github.ref, 'refs/tags/v') # 仅在特定标签触发
-
+    if: startsWith(github.ref, 'refs/tags/v') 
     steps:
       # 1. 拉取代码
       - name: Checkout code
