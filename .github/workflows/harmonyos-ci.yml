@@ -50,6 +50,8 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write 
     container: ghcr.io/sanchuanhehe/harmony-next-pipeline-docker/harmonyos-ci-image:latest
     if: startsWith(github.ref, 'refs/tags/v') 
     steps:
