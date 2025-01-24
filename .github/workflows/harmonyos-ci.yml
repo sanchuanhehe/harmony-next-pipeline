@@ -93,6 +93,12 @@ jobs:
           draft: false
           prerelease: false
 
+      # 根据tag创建新的release分支
+      - name: Create Release Branch
+        run: |
+          git checkout -b release/${{ github.ref_name }}
+          git push origin release/${{ github.ref_name }}
+
       # 5. 上传 HAP 文件到 GitHub Release
       - name: Upload HAP to GitHub Release
         uses: actions/upload-release-asset@v1
