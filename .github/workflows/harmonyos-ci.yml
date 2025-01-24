@@ -64,8 +64,10 @@ jobs:
           name: build-output
           path: $GITHUB_WORKSPACE/entry/build/default/outputs/default
 
-      # 3. 签名 HAP 文件
+      # 3. 签名 HAP 文件，如果存在签名文件和证书文件还有密钥文件和KEY_PASSWORD和KEYSTORE_PASSWORD
       - name: Sign HAP
+        id: sign_hap
+        if: env.SIGNING_CERT && env.SIGNING_PROFILE && env.SIGNING_KEY
         run: |
           cd $GITHUB_WORKSPACE
           java -jar /harmonyos-tools/command-line-tools/sdk/default/openharmony/toolchains/lib/hap-sign-tool.jar \
@@ -73,10 +75,10 @@ jobs:
           -keyAlias "ide_demo_app" \
           -signAlg "SHA256withECDSA" \
           -mode "localSign" \
-          -appCertFile "signing/demo.cer" \
-          -profileFile "signing/demo.p7b" \
+          -appCertFile "${{ env.SIGNING_CERT }}" \
+          -profileFile "${{ env.SIGNING_PROFILE }}" \
           -inFile "./entry/build/default/outputs/default/entry-default.hap" \
-          -keystoreFile "signing/idedemokey.p12" \
+          -keystoreFile "${{ env.SIGNING_KEY }}" \
           -outFile "./entry/build/default/outputs/default/entry-default-signed.hap" \
           -keyPwd "${{ secrets.KEY_PASSWORD }}" \
           -keystorePwd "${{ secrets.KEYSTORE_PASSWORD }}" \
@@ -106,6 +108,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: $GITHUB_WORKSPACE/entry/build/default/outputs/default/entry-default-signed.hap
-          asset_name: entry-default-signed.hap
+          asset_path: ${{ steps.sign_hap.outcome == 'success' && './entry/build/default/outputs/default/entry-default-signed.hap' || './entry/build/default/outputs/default/entry-default-unsigned.hap' }}
+          asset_name: ${{ steps.sign_hap.outcome == 'success' && 'entry-default-signed.hap' || 'entry-default-unsigned.hap' }}
           asset_content_type: application/octet-stream
