@@ -1,0 +1,3 @@
+{
+    "extends": "@arkts/declarations/dist/tsconfig.base.json"
+}
