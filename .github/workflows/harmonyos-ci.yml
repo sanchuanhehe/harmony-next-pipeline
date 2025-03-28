@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - master
+      - openharmoy_master
     tags:
       - '*'
   pull_request:
     branches:
       - master
+      - openharmoy_master
 
 jobs:
   build:
